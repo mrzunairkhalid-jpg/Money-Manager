@@ -1,5 +1,5 @@
 // ==========================================
-// MONEY MANAGER - APP CONTROLLER
+// MONEY MANAGER - MAIN APP
 // ==========================================
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -8,11 +8,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 // ==========================================
-// INITIALIZE
+// START APP
 // ==========================================
 
 function initializeApp() {
   setTodayDate();
+  createOperationSelector();
   loadDashboard();
   setupButtons();
   setupTransactionForm();
@@ -36,6 +37,48 @@ function setTodayDate() {
     String(today.getMonth() + 1).padStart(2, "0") +
     "-" +
     String(today.getDate()).padStart(2, "0");
+}
+
+
+// ==========================================
+// ADD / MINUS SELECTOR
+// ==========================================
+
+function createOperationSelector() {
+
+  const typeInput =
+    document.getElementById("transactionType");
+
+  const amountInput =
+    document.getElementById("amount");
+
+  if (!typeInput || !amountInput) return;
+
+  if (document.getElementById("operationType")) return;
+
+  const label = document.createElement("label");
+
+  label.htmlFor = "operationType";
+  label.textContent = "Transaction";
+
+  const select = document.createElement("select");
+
+  select.id = "operationType";
+
+  select.innerHTML = `
+    <option value="add">➕ Add / Receive</option>
+    <option value="minus">➖ Minus / Return</option>
+  `;
+
+  amountInput.parentNode.insertBefore(
+    label,
+    amountInput
+  );
+
+  amountInput.parentNode.insertBefore(
+    select,
+    amountInput
+  );
 }
 
 
@@ -75,11 +118,14 @@ function loadDashboard() {
   });
 
 
-  const assets = bank + cash;
+  const totalAssets =
+    bank + cash;
 
-  const liabilities = amanat + credit;
+  const totalLiabilities =
+    amanat + credit;
 
-  const net = assets - liabilities;
+  const netBalance =
+    totalAssets - totalLiabilities;
 
 
   updateAmount("bankTotal", bank);
@@ -87,17 +133,21 @@ function loadDashboard() {
   updateAmount("amanatTotal", amanat);
   updateAmount("creditTotal", credit);
 
-  updateAmount("totalAssets", assets);
-  updateAmount("totalLiabilities", liabilities);
-  updateAmount("netBalance", net);
+  updateAmount("totalAssets", totalAssets);
+  updateAmount(
+    "totalLiabilities",
+    totalLiabilities
+  );
+
+  updateAmount(
+    "netBalance",
+    netBalance
+  );
 
 
   renderRecentTransactions(transactions);
-
   renderAmanat(transactions);
-
   renderBanks(transactions);
-
 }
 
 
@@ -108,10 +158,25 @@ function loadDashboard() {
 function formatMoney(amount) {
 
   return "Rs. " +
-    Number(amount || 0).toLocaleString("en-PK", {
-      maximumFractionDigits: 2
-    });
+    Math.abs(Number(amount || 0))
+      .toLocaleString("en-PK", {
+        maximumFractionDigits: 2
+      });
 
+}
+
+
+function formatRupees(amount) {
+
+  const number = Number(amount) || 0;
+
+  if (number < 0) {
+    return "- Rs. " + Math.abs(number)
+      .toLocaleString("en-PK");
+  }
+
+  return "Rs. " +
+    number.toLocaleString("en-PK");
 }
 
 
@@ -120,10 +185,14 @@ function updateAmount(id, amount) {
   const element =
     document.getElementById(id);
 
-  if (element) {
-    element.textContent =
-      formatMoney(amount);
-  }
+  if (!element) return;
+
+  const number = Number(amount) || 0;
+
+  element.textContent =
+    number < 0
+      ? "- Rs. " + Math.abs(number).toLocaleString("en-PK")
+      : "Rs. " + number.toLocaleString("en-PK");
 
 }
 
@@ -136,7 +205,6 @@ function setupButtons() {
 
   const addButton =
     document.getElementById("mainAddBtn");
-
 
   if (addButton) {
 
@@ -169,7 +237,6 @@ function setupButtons() {
   const closeButton =
     document.getElementById("closeModalBtn");
 
-
   if (closeButton) {
 
     closeButton.addEventListener(
@@ -185,7 +252,6 @@ function setupButtons() {
       "transactionModal"
     );
 
-
   if (modal) {
 
     modal.addEventListener(
@@ -193,9 +259,7 @@ function setupButtons() {
       event => {
 
         if (event.target === modal) {
-
           closeTransactionModal();
-
         }
 
       }
@@ -207,7 +271,7 @@ function setupButtons() {
 
 
 // ==========================================
-// MODAL
+// OPEN MODAL
 // ==========================================
 
 function openTransactionModal(type = "") {
@@ -217,18 +281,14 @@ function openTransactionModal(type = "") {
       "transactionModal"
     );
 
-
   if (!modal) return;
 
-
   modal.classList.add("show");
-
 
   const typeInput =
     document.getElementById(
       "transactionType"
     );
-
 
   if (typeInput && type) {
 
@@ -236,11 +296,22 @@ function openTransactionModal(type = "") {
 
   }
 
+  const operation =
+    document.getElementById(
+      "operationType"
+    );
+
+  if (operation) {
+    operation.value = "add";
+  }
 
   setTodayDate();
-
 }
 
+
+// ==========================================
+// CLOSE MODAL
+// ==========================================
 
 function closeTransactionModal() {
 
@@ -249,11 +320,8 @@ function closeTransactionModal() {
       "transactionModal"
     );
 
-
   if (modal) {
-
     modal.classList.remove("show");
-
   }
 
 }
@@ -269,7 +337,6 @@ function setupTransactionForm() {
     document.getElementById(
       "transactionForm"
     );
-
 
   if (!form) return;
 
@@ -293,7 +360,7 @@ function setupTransactionForm() {
         ).value.trim();
 
 
-      const amount =
+      const rawAmount =
         Number(
           document.getElementById(
             "amount"
@@ -313,6 +380,18 @@ function setupTransactionForm() {
         ).value.trim();
 
 
+      const operationElement =
+        document.getElementById(
+          "operationType"
+        );
+
+
+      const operation =
+        operationElement
+          ? operationElement.value
+          : "add";
+
+
       if (!type) {
 
         showToast(
@@ -321,11 +400,10 @@ function setupTransactionForm() {
         );
 
         return;
-
       }
 
 
-      if (!amount || amount <= 0) {
+      if (!rawAmount || rawAmount <= 0) {
 
         showToast(
           "Please enter a valid amount.",
@@ -333,7 +411,14 @@ function setupTransactionForm() {
         );
 
         return;
+      }
 
+
+      let amount = rawAmount;
+
+
+      if (operation === "minus") {
+        amount = -rawAmount;
       }
 
 
@@ -348,6 +433,8 @@ function setupTransactionForm() {
           getDefaultName(type),
 
         amount: amount,
+
+        operation: operation,
 
         date: date,
 
@@ -365,6 +452,16 @@ function setupTransactionForm() {
       form.reset();
 
       setTodayDate();
+
+      const operationAfterReset =
+        document.getElementById(
+          "operationType"
+        );
+
+      if (operationAfterReset) {
+        operationAfterReset.value = "add";
+      }
+
 
       closeTransactionModal();
 
@@ -399,9 +496,7 @@ function getDefaultName(type) {
 
   };
 
-
   return names[type] || "Transaction";
-
 }
 
 
@@ -418,7 +513,6 @@ function renderRecentTransactions(
       "recentTransactions"
     );
 
-
   if (!container) return;
 
 
@@ -432,7 +526,6 @@ function renderRecentTransactions(
     );
 
     return;
-
   }
 
 
@@ -440,8 +533,8 @@ function renderRecentTransactions(
     [...transactions]
       .sort(
         (a, b) =>
-          new Date(b.date) -
-          new Date(a.date)
+          new Date(b.createdAt || b.date) -
+          new Date(a.createdAt || a.date)
       )
       .slice(0, 8);
 
@@ -452,9 +545,14 @@ function renderRecentTransactions(
       const color =
         getTypeColor(item.type);
 
-
       const icon =
         getTransactionIcon(item.type);
+
+      const amount =
+        Number(item.amount) || 0;
+
+      const sign =
+        amount >= 0 ? "+" : "−";
 
 
       return `
@@ -468,9 +566,7 @@ function renderRecentTransactions(
 
             <div
               class="item-icon"
-              style="
-                background:${color}20;
-              "
+              style="background:${color}20"
             >
               ${icon}
             </div>
@@ -492,8 +588,11 @@ function renderRecentTransactions(
 
           <div>
 
-            <div class="item-amount">
-              ${formatRupees(item.amount)}
+            <div
+              class="item-amount"
+              style="color:${color}"
+            >
+              ${sign} ${formatMoney(amount)}
             </div>
 
             <div class="item-date">
@@ -512,7 +611,7 @@ function renderRecentTransactions(
 
 
 // ==========================================
-// AMANAT
+// AMANAT LIST
 // ==========================================
 
 function renderAmanat(transactions) {
@@ -521,7 +620,6 @@ function renderAmanat(transactions) {
     document.getElementById(
       "amanatList"
     );
-
 
   if (!container) return;
 
@@ -543,7 +641,6 @@ function renderAmanat(transactions) {
     );
 
     return;
-
   }
 
 
@@ -584,23 +681,39 @@ function renderAmanat(transactions) {
     Object.entries(people)
       .sort(
         (a, b) =>
-          b[1].balance -
-          a[1].balance
+          Math.abs(b[1].balance) -
+          Math.abs(a[1].balance)
       )
-      .slice(0, 8)
+      .slice(0, 10)
       .map(([name, person]) => {
+
+        const balance =
+          Number(person.balance) || 0;
+
+
+        const color =
+          balance >= 0
+            ? "#f59e0b"
+            : "#22c55e";
+
 
         return `
 
           <div
             class="person-item"
             onclick="showPersonHistory('${escapeForAttribute(name)}')"
-            style="cursor:pointer"
+            style="
+              cursor:pointer;
+              border-left:3px solid ${color};
+            "
           >
 
             <div class="item-left">
 
-              <div class="item-icon">
+              <div
+                class="item-icon"
+                style="background:${color}20"
+              >
                 👤
               </div>
 
@@ -621,8 +734,11 @@ function renderAmanat(transactions) {
 
             <div>
 
-              <div class="item-amount">
-                ${formatRupees(person.balance)}
+              <div
+                class="item-amount"
+                style="color:${color}"
+              >
+                ${formatRupees(balance)}
               </div>
 
               <div class="item-date">
@@ -641,7 +757,7 @@ function renderAmanat(transactions) {
 
 
 // ==========================================
-// BANKS
+// BANK LIST
 // ==========================================
 
 function renderBanks(transactions) {
@@ -650,7 +766,6 @@ function renderBanks(transactions) {
     document.getElementById(
       "bankList"
     );
-
 
   if (!container) return;
 
@@ -672,7 +787,6 @@ function renderBanks(transactions) {
     );
 
     return;
-
   }
 
 
@@ -686,9 +800,7 @@ function renderBanks(transactions) {
 
 
     if (!accounts[name]) {
-
       accounts[name] = 0;
-
     }
 
 
@@ -727,7 +839,10 @@ function renderBanks(transactions) {
             </div>
 
 
-            <div class="item-amount">
+            <div
+              class="item-amount"
+              style="color:#3b82f6"
+            >
               ${formatRupees(amount)}
             </div>
 
@@ -768,7 +883,6 @@ function showPersonHistory(name) {
     );
 
     return;
-
   }
 
 
@@ -797,12 +911,19 @@ function showPersonHistory(name) {
 
   transactions.forEach(item => {
 
+    const amount =
+      Number(item.amount) || 0;
+
+    const sign =
+      amount >= 0 ? "+" : "−";
+
+
     message +=
       `\n${formatTransactionDate(item.date)}`;
 
 
     message +=
-      ` — ${formatRupees(item.amount)}`;
+      ` — ${sign} ${formatMoney(amount)}`;
 
 
     if (item.note) {
@@ -840,7 +961,6 @@ function getTypeColor(type) {
 
 
   return colors[type] || "#d4af37";
-
 }
 
 
@@ -860,7 +980,6 @@ function getTransactionIcon(type) {
 
 
   return icons[type] || "💰";
-
 }
 
 
@@ -880,7 +999,6 @@ function getTransactionLabel(type) {
 
 
   return labels[type] || "Transaction";
-
 }
 
 
@@ -888,17 +1006,12 @@ function formatTransactionDate(date) {
 
   if (!date) return "";
 
-
   const d =
     new Date(date);
 
-
   if (Number.isNaN(d.getTime())) {
-
     return date;
-
   }
-
 
   return d.toLocaleDateString(
     "en-PK",
@@ -921,6 +1034,43 @@ function escapeForAttribute(value) {
 }
 
 
-// ==========================================
-// DONE
-// ==========================================
+function safeHTML(value) {
+
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+
+}
+
+
+function renderEmptyState(
+  container,
+  icon,
+  title,
+  text
+) {
+
+  container.innerHTML = `
+
+    <div class="empty-state">
+
+      <div class="empty-icon">
+        ${icon}
+      </div>
+
+      <h3>
+        ${title}
+      </h3>
+
+      <p>
+        ${text}
+      </p>
+
+    </div>
+
+  `;
+
+}
