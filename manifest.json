@@ -1,7 +1,7 @@
 {
   "name": "Money Manager",
   "short_name": "Money Manager",
-  "description": "Personal money, amanat, bank, cash and credit card manager.",
+  "description": "Personal money, Amanat, Bank, Cash and Credit Card Manager.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
