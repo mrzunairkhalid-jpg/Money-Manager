@@ -1,1 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 
+  <title>Money Manager</title>
+
+  <meta name="theme-color" content="#111111">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Money Manager">
+
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <!-- App Header -->
+  <header class="app-header">
+    <div>
+      <p class="small-title">PERSONAL FINANCE</p>
+      <h1>Money Manager</h1>
+    </div>
+
+    <button class="icon-button" id="settingsBtn" aria-label="Settings">
+      ⚙️
+    </button>
+  </header>
+
+
+  <!-- Main Content -->
+  <main class="container">
+
+    <!-- Balance Overview -->
+    <section class="hero-card">
+      <div class="hero-top">
+        <div>
+          <p class="hero-label">NET BALANCE</p>
+          <h2 id="netBalance">Rs. 0</h2>
+        </div>
+
+        <div class="balance-icon">
+          💰
+        </div>
+      </div>
+
+      <div class="hero-bottom">
+        <div>
+          <span>Total Assets</span>
+          <strong id="totalAssets">Rs. 0</strong>
+        </div>
+
+        <div>
+          <span>Total Liabilities</span>
+          <strong id="totalLiabilities">Rs. 0</strong>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- Summary Cards -->
+    <section class="summary-grid">
+
+      <div class="summary-card bank-card">
+        <div class="card-icon">🏦</div>
+        <div>
+          <p>Bank Balance</p>
+          <h3 id="bankTotal">Rs. 0</h3>
+        </div>
+      </div>
+
+      <div class="summary-card cash-card">
+        <div class="card-icon">💵</div>
+        <div>
+          <p>Cash</p>
+          <h3 id="cashTotal">Rs. 0</h3>
+        </div>
+      </div>
+
+      <div class="summary-card amanat-card">
+        <div class="card-icon">👤</div>
+        <div>
+          <p>Amanat</p>
+          <h3 id="amanatTotal">Rs. 0</h3>
+        </div>
+      </div>
+
+      <div class="summary-card credit-card">
+        <div class="card-icon">💳</div>
+        <div>
+          <p>Credit Card Due</p>
+          <h3 id="creditTotal">Rs. 0</h3>
+        </div>
+      </div>
+
+    </section>
+
+
+    <!-- Quick Actions -->
+    <section class="section">
+
+      <div class="section-heading">
+        <h2>Quick Actions</h2>
+      </div>
+
+      <div class="action-grid">
+
+        <button class="action-button amanat-action" data-action="amanat">
+          <span>👤</span>
+          <strong>Add Amanat</strong>
+          <small>People's Money</small>
+        </button>
+
+        <button class="action-button bank-action" data-action="bank">
+          <span>🏦</span>
+          <strong>Add Bank</strong>
+          <small>Bank Balance</small>
+        </button>
+
+        <button class="action-button cash-action" data-action="cash">
+          <span>💵</span>
+          <strong>Add Cash</strong>
+          <small>Cash Balance</small>
+        </button>
+
+        <button class="action-button credit-action" data-action="credit">
+          <span>💳</span>
+          <strong>Add Credit</strong>
+          <small>Credit Card</small>
+        </button>
+
+      </div>
+
+    </section>
+
+
+    <!-- Recent Transactions -->
+    <section class="section">
+
+      <div class="section-heading">
+        <h2>Recent Transactions</h2>
+
+        <button class="text-button" id="viewAllBtn">
+          View All
+        </button>
+      </div>
+
+      <div id="recentTransactions" class="transactions-list">
+
+        <div class="empty-state">
+          <div class="empty-icon">📋</div>
+          <h3>No Transactions Yet</h3>
+          <p>Your recent transactions will appear here.</p>
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- People / Amanat -->
+    <section class="section">
+
+      <div class="section-heading">
+        <h2>Amanat</h2>
+
+        <button class="text-button" id="viewAmanatBtn">
+          View All
+        </button>
+      </div>
+
+      <div id="amanatList" class="people-list">
+
+        <div class="empty-state small">
+          <div class="empty-icon">👤</div>
+          <p>No Amanat records yet.</p>
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- Banks -->
+    <section class="section">
+
+      <div class="section-heading">
+        <h2>Bank Accounts</h2>
+
+        <button class="text-button" id="viewBanksBtn">
+          View All
+        </button>
+      </div>
+
+      <div id="bankList" class="bank-list">
+
+        <div class="empty-state small">
+          <div class="empty-icon">🏦</div>
+          <p>No bank accounts added yet.</p>
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+
+  <!-- Bottom Navigation -->
+  <nav class="bottom-nav">
+
+    <button class="nav-item active" data-page="dashboard">
+      <span>🏠</span>
+      <small>Home</small>
+    </button>
+
+    <button class="nav-item" data-page="amanat">
+      <span>👤</span>
+      <small>Amanat</small>
+    </button>
+
+    <button class="nav-item add-main" id="mainAddBtn">
+      <span>＋</span>
+    </button>
+
+    <button class="nav-item" data-page="accounts">
+      <span>🏦</span>
+      <small>Accounts</small>
+    </button>
+
+    <button class="nav-item" data-page="reports">
+      <span>📊</span>
+      <small>Reports</small>
+    </button>
+
+  </nav>
+
+
+  <!-- Add Transaction Modal -->
+  <div class="modal-overlay" id="transactionModal">
+
+    <div class="modal">
+
+      <div class="modal-header">
+        <div>
+          <p class="small-title">NEW ENTRY</p>
+          <h2>Add Transaction</h2>
+        </div>
+
+        <button class="close-button" id="closeModalBtn">
+          ✕
+        </button>
+      </div>
+
+
+      <form id="transactionForm">
+
+        <label for="transactionType">
+          Type
+        </label>
+
+        <select id="transactionType" required>
+          <option value="">Select Type</option>
+          <option value="amanat">Amanat</option>
+          <option value="bank">Bank</option>
+          <option value="cash">Cash</option>
+          <option value="credit">Credit Card</option>
+        </select>
+
+
+        <label for="personName">
+          Name / Account
+        </label>
+
+        <input
+          type="text"
+          id="personName"
+          placeholder="Enter name or account"
+        >
+
+
+        <label for="amount">
+          Amount
+        </label>
+
+        <input
+          type="number"
+          id="amount"
+          placeholder="Enter amount"
+          min="0"
+          step="0.01"
+          required
+        >
+
+
+        <label for="transactionDate">
+          Date
+        </label>
+
+        <input
+          type="date"
+          id="transactionDate"
+          required
+        >
+
+
+        <label for="transactionNote">
+          Note
+        </label>
+
+        <textarea
+          id="transactionNote"
+          rows="3"
+          placeholder="Optional note..."
+        ></textarea>
+
+
+        <button type="submit" class="primary-button">
+          Save Transaction
+        </button>
+
+      </form>
+
+    </div>
+
+  </div>
+
+
+  <!-- JavaScript -->
+  <script src="storage.js"></script>
+  <script src="ui.js"></script>
+  <script src="app.js"></script>
+  <script src="script.js"></script>
+
+</body>
+</html>
