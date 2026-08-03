@@ -6,6 +6,11 @@ document.addEventListener("DOMContentLoaded", () => {
   initializeApp();
 });
 
+
+// ==========================================
+// INITIALIZE
+// ==========================================
+
 function initializeApp() {
   setTodayDate();
   loadDashboard();
@@ -15,20 +20,22 @@ function initializeApp() {
 
 
 // ==========================================
-// SET TODAY DATE
+// DATE
 // ==========================================
 
 function setTodayDate() {
-  const dateInput = document.getElementById("transactionDate");
+  const input = document.getElementById("transactionDate");
 
-  if (dateInput) {
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, "0");
-    const day = String(today.getDate()).padStart(2, "0");
+  if (!input) return;
 
-    dateInput.value = `${year}-${month}-${day}`;
-  }
+  const today = new Date();
+
+  input.value =
+    today.getFullYear() +
+    "-" +
+    String(today.getMonth() + 1).padStart(2, "0") +
+    "-" +
+    String(today.getDate()).padStart(2, "0");
 }
 
 
@@ -37,72 +44,87 @@ function setTodayDate() {
 // ==========================================
 
 function loadDashboard() {
+
   const transactions = getTransactions();
 
-  let bankTotal = 0;
-  let cashTotal = 0;
-  let amanatTotal = 0;
-  let creditTotal = 0;
+  let bank = 0;
+  let cash = 0;
+  let amanat = 0;
+  let credit = 0;
 
-  transactions.forEach(transaction => {
-    const amount = Number(transaction.amount) || 0;
+  transactions.forEach(item => {
 
-    if (transaction.type === "bank") {
-      bankTotal += amount;
+    const amount = Number(item.amount) || 0;
+
+    if (item.type === "bank") {
+      bank += amount;
     }
 
-    if (transaction.type === "cash") {
-      cashTotal += amount;
+    if (item.type === "cash") {
+      cash += amount;
     }
 
-    if (transaction.type === "amanat") {
-      amanatTotal += amount;
+    if (item.type === "amanat") {
+      amanat += amount;
     }
 
-    if (transaction.type === "credit") {
-      creditTotal += amount;
+    if (item.type === "credit") {
+      credit += amount;
     }
+
   });
 
-  const totalAssets = bankTotal + cashTotal;
-  const totalLiabilities = amanatTotal + creditTotal;
 
-  const netBalance = totalAssets - totalLiabilities;
+  const assets = bank + cash;
 
-  updateAmount("bankTotal", bankTotal);
-  updateAmount("cashTotal", cashTotal);
-  updateAmount("amanatTotal", amanatTotal);
-  updateAmount("creditTotal", creditTotal);
+  const liabilities = amanat + credit;
 
-  updateAmount("totalAssets", totalAssets);
-  updateAmount("totalLiabilities", totalLiabilities);
-  updateAmount("netBalance", netBalance);
+  const net = assets - liabilities;
+
+
+  updateAmount("bankTotal", bank);
+  updateAmount("cashTotal", cash);
+  updateAmount("amanatTotal", amanat);
+  updateAmount("creditTotal", credit);
+
+  updateAmount("totalAssets", assets);
+  updateAmount("totalLiabilities", liabilities);
+  updateAmount("netBalance", net);
+
 
   renderRecentTransactions(transactions);
+
   renderAmanat(transactions);
+
   renderBanks(transactions);
+
 }
 
 
 // ==========================================
-// FORMAT MONEY
+// MONEY FORMAT
 // ==========================================
 
 function formatMoney(amount) {
-  const number = Number(amount) || 0;
 
-  return "Rs. " + number.toLocaleString("en-PK", {
-    maximumFractionDigits: 2
-  });
+  return "Rs. " +
+    Number(amount || 0).toLocaleString("en-PK", {
+      maximumFractionDigits: 2
+    });
+
 }
 
 
 function updateAmount(id, amount) {
-  const element = document.getElementById(id);
+
+  const element =
+    document.getElementById(id);
 
   if (element) {
-    element.textContent = formatMoney(amount);
+    element.textContent =
+      formatMoney(amount);
   }
+
 }
 
 
@@ -112,90 +134,72 @@ function updateAmount(id, amount) {
 
 function setupButtons() {
 
-  // Main + button
-  const mainAddBtn = document.getElementById("mainAddBtn");
+  const addButton =
+    document.getElementById("mainAddBtn");
 
-  if (mainAddBtn) {
-    mainAddBtn.addEventListener("click", () => {
-      openTransactionModal();
-    });
+
+  if (addButton) {
+
+    addButton.addEventListener(
+      "click",
+      () => openTransactionModal()
+    );
+
   }
 
 
-  // Quick action buttons
-  document.querySelectorAll("[data-action]").forEach(button => {
+  document.querySelectorAll(
+    "[data-action]"
+  ).forEach(button => {
 
-    button.addEventListener("click", () => {
+    button.addEventListener(
+      "click",
+      () => {
 
-      const action = button.dataset.action;
+        openTransactionModal(
+          button.dataset.action
+        );
 
-      openTransactionModal(action);
-
-    });
+      }
+    );
 
   });
 
 
-  // Close modal
-  const closeModalBtn = document.getElementById("closeModalBtn");
+  const closeButton =
+    document.getElementById("closeModalBtn");
 
-  if (closeModalBtn) {
-    closeModalBtn.addEventListener("click", closeTransactionModal);
+
+  if (closeButton) {
+
+    closeButton.addEventListener(
+      "click",
+      closeTransactionModal
+    );
+
   }
 
 
-  // Click outside modal
-  const modal = document.getElementById("transactionModal");
+  const modal =
+    document.getElementById(
+      "transactionModal"
+    );
+
 
   if (modal) {
 
-    modal.addEventListener("click", event => {
+    modal.addEventListener(
+      "click",
+      event => {
 
-      if (event.target === modal) {
-        closeTransactionModal();
+        if (event.target === modal) {
+
+          closeTransactionModal();
+
+        }
+
       }
-
-    });
-
-  }
-
-
-  // View all buttons
-  const viewAllBtn = document.getElementById("viewAllBtn");
-
-  if (viewAllBtn) {
-
-    viewAllBtn.addEventListener("click", () => {
-
-      alert("Full transaction history will be available here.");
-
-    });
-
-  }
-
-
-  const viewAmanatBtn = document.getElementById("viewAmanatBtn");
-
-  if (viewAmanatBtn) {
-
-    viewAmanatBtn.addEventListener("click", () => {
-
-      alert("Amanat management screen will be added next.");
-
-    });
-
-  }
-
-
-  const viewBanksBtn = document.getElementById("viewBanksBtn");
-
-  if (viewBanksBtn) {
-
-    viewBanksBtn.addEventListener("click", () => {
-
-      alert("Bank management screen will be added next.");
-
-    });
+    );
 
   }
 
@@ -203,22 +207,35 @@ function setupButtons() {
 
 
 // ==========================================
-// TRANSACTION MODAL
+// MODAL
 // ==========================================
 
 function openTransactionModal(type = "") {
 
-  const modal = document.getElementById("transactionModal");
+  const modal =
+    document.getElementById(
+      "transactionModal"
+    );
+
 
   if (!modal) return;
 
+
   modal.classList.add("show");
 
-  const typeInput = document.getElementById("transactionType");
+
+  const typeInput =
+    document.getElementById(
+      "transactionType"
+    );
+
 
   if (typeInput && type) {
+
     typeInput.value = type;
+
   }
+
 
   setTodayDate();
 
@@ -227,105 +244,163 @@ function openTransactionModal(type = "") {
 
 function closeTransactionModal() {
 
-  const modal = document.getElementById("transactionModal");
+  const modal =
+    document.getElementById(
+      "transactionModal"
+    );
+
 
   if (modal) {
+
     modal.classList.remove("show");
+
   }
 
 }
 
 
 // ==========================================
-// TRANSACTION FORM
+// FORM
 // ==========================================
 
 function setupTransactionForm() {
 
-  const form = document.getElementById("transactionForm");
+  const form =
+    document.getElementById(
+      "transactionForm"
+    );
+
 
   if (!form) return;
 
-  form.addEventListener("submit", event => {
 
-    event.preventDefault();
+  form.addEventListener(
+    "submit",
+    event => {
 
-    const type = document.getElementById("transactionType").value;
-    const name = document.getElementById("personName").value.trim();
-    const amount = Number(document.getElementById("amount").value);
-    const date = document.getElementById("transactionDate").value;
-    const note = document.getElementById("transactionNote").value.trim();
+      event.preventDefault();
 
 
-    if (!type) {
-      alert("Please select a transaction type.");
-      return;
+      const type =
+        document.getElementById(
+          "transactionType"
+        ).value;
+
+
+      const name =
+        document.getElementById(
+          "personName"
+        ).value.trim();
+
+
+      const amount =
+        Number(
+          document.getElementById(
+            "amount"
+          ).value
+        );
+
+
+      const date =
+        document.getElementById(
+          "transactionDate"
+        ).value;
+
+
+      const note =
+        document.getElementById(
+          "transactionNote"
+        ).value.trim();
+
+
+      if (!type) {
+
+        showToast(
+          "Please select a type.",
+          "error"
+        );
+
+        return;
+
+      }
+
+
+      if (!amount || amount <= 0) {
+
+        showToast(
+          "Please enter a valid amount.",
+          "error"
+        );
+
+        return;
+
+      }
+
+
+      const transaction = {
+
+        id: Date.now(),
+
+        type: type,
+
+        name:
+          name ||
+          getDefaultName(type),
+
+        amount: amount,
+
+        date: date,
+
+        note: note,
+
+        createdAt:
+          new Date().toISOString()
+
+      };
+
+
+      saveTransaction(transaction);
+
+
+      form.reset();
+
+      setTodayDate();
+
+      closeTransactionModal();
+
+      loadDashboard();
+
+
+      showToast(
+        "Transaction saved successfully."
+      );
+
     }
-
-
-    if (!amount || amount <= 0) {
-      alert("Please enter a valid amount.");
-      return;
-    }
-
-
-    const transaction = {
-
-      id: Date.now(),
-
-      type: type,
-
-      name: name || getDefaultName(type),
-
-      amount: amount,
-
-      date: date,
-
-      note: note,
-
-      createdAt: new Date().toISOString()
-
-    };
-
-
-    saveTransaction(transaction);
-
-    form.reset();
-
-    setTodayDate();
-
-    closeTransactionModal();
-
-    loadDashboard();
-
-  });
+  );
 
 }
 
 
 // ==========================================
-// DEFAULT NAMES
+// DEFAULT NAME
 // ==========================================
 
 function getDefaultName(type) {
 
-  if (type === "amanat") {
-    return "Amanat";
-  }
+  const names = {
 
-  if (type === "bank") {
-    return "Bank Account";
-  }
+    amanat: "Amanat",
 
-  if (type === "cash") {
-    return "Cash";
-  }
+    bank: "Bank Account",
 
-  if (type === "credit") {
-    return "Credit Card";
-  }
+    cash: "Cash",
 
-  return "Transaction";
+    credit: "Credit Card"
+
+  };
+
+
+  return names[type] || "Transaction";
 
 }
 
@@ -334,239 +409,80 @@ function getDefaultName(type) {
 // RECENT TRANSACTIONS
 // ==========================================
 
-function renderRecentTransactions(transactions) {
+function renderRecentTransactions(
+  transactions
+) {
 
-  const container = document.getElementById("recentTransactions");
+  const container =
+    document.getElementById(
+      "recentTransactions"
+    );
+
 
   if (!container) return;
 
 
   if (!transactions.length) {
 
-    container.innerHTML = `
-      <div class="empty-state">
-        <div class="empty-icon">📋</div>
-        <h3>No Transactions Yet</h3>
-        <p>Your recent transactions will appear here.</p>
-      </div>
-    `;
+    renderEmptyState(
+      container,
+      "📋",
+      "No Transactions Yet",
+      "Your recent transactions will appear here."
+    );
 
     return;
+
   }
 
 
-  const recent = [...transactions]
-    .sort((a, b) => new Date(b.date) - new Date(a.date))
-    .slice(0, 5);
+  const recent =
+    [...transactions]
+      .sort(
+        (a, b) =>
+          new Date(b.date) -
+          new Date(a.date)
+      )
+      .slice(0, 8);
 
 
-  container.innerHTML = recent.map(transaction => {
+  container.innerHTML =
+    recent.map(item => {
 
-    return `
+      const color =
+        getTypeColor(item.type);
 
-      <div class="transaction-item">
 
-        <div class="item-left">
+      const icon =
+        getTransactionIcon(item.type);
 
-          <div class="item-icon">
-            ${getTypeIcon(transaction.type)}
-          </div>
-
-          <div>
-
-            <div class="item-title">
-              ${escapeHTML(transaction.name)}
-            </div>
-
-            <div class="item-subtitle">
-              ${getTypeName(transaction.type)}
-            </div>
-
-          </div>
-
-        </div>
-
-
-        <div>
-
-          <div class="item-amount">
-            ${formatMoney(transaction.amount)}
-          </div>
-
-          <div class="item-date">
-            ${formatDate(transaction.date)}
-          </div>
-
-        </div>
-
-      </div>
-
-    `;
-
-  }).join("");
-
-}
-
-
-// ==========================================
-// AMANAT LIST
-// ==========================================
-
-function renderAmanat(transactions) {
-
-  const container = document.getElementById("amanatList");
-
-  if (!container) return;
-
-
-  const amanat = transactions.filter(
-    transaction => transaction.type === "amanat"
-  );
-
-
-  if (!amanat.length) {
-
-    container.innerHTML = `
-      <div class="empty-state small">
-        <div class="empty-icon">👤</div>
-        <p>No Amanat records yet.</p>
-      </div>
-    `;
-
-    return;
-  }
-
-
-  // Group by name
-  const grouped = {};
-
-
-  amanat.forEach(transaction => {
-
-    const name = transaction.name || "Unknown";
-
-    if (!grouped[name]) {
-      grouped[name] = 0;
-    }
-
-    grouped[name] += Number(transaction.amount) || 0;
-
-  });
-
-
-  const people = Object.entries(grouped)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 5);
-
-
-  container.innerHTML = people.map(([name, amount]) => {
-
-    return `
-
-      <div class="person-item">
-
-        <div class="item-left">
-
-          <div class="item-icon">
-            👤
-          </div>
-
-          <div>
-
-            <div class="item-title">
-              ${escapeHTML(name)}
-            </div>
-
-            <div class="item-subtitle">
-              Amanat Balance
-            </div>
-
-          </div>
-
-        </div>
-
-
-        <div class="item-amount">
-          ${formatMoney(amount)}
-        </div>
-
-      </div>
-
-    `;
-
-  }).join("");
-
-}
-
-
-// ==========================================
-// BANK LIST
-// ==========================================
-
-function renderBanks(transactions) {
-
-  const container = document.getElementById("bankList");
-
-  if (!container) return;
-
-
-  const banks = transactions.filter(
-    transaction => transaction.type === "bank"
-  );
-
-
-  if (!banks.length) {
-
-    container.innerHTML = `
-      <div class="empty-state small">
-        <div class="empty-icon">🏦</div>
-        <p>No bank accounts added yet.</p>
-      </div>
-    `;
-
-    return;
-  }
-
-
-  const grouped = {};
-
-
-  banks.forEach(transaction => {
-
-    const name = transaction.name || "Bank";
-
-    if (!grouped[name]) {
-      grouped[name] = 0;
-    }
-
-    grouped[name] += Number(transaction.amount) || 0;
-
-  });
-
-
-  container.innerHTML = Object.entries(grouped)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 5)
-    .map(([name, amount]) => {
 
       return `
 
-        <div class="bank-item">
+        <div
+          class="transaction-item"
+          style="border-left: 3px solid ${color}"
+        >
 
           <div class="item-left">
 
-            <div class="item-icon">
-              🏦
+            <div
+              class="item-icon"
+              style="
+                background:${color}20;
+              "
+            >
+              ${icon}
             </div>
 
             <div>
 
               <div class="item-title">
-                ${escapeHTML(name)}
+                ${safeHTML(item.name)}
               </div>
 
               <div class="item-subtitle">
-                Current Balance
+                ${getTransactionLabel(item.type)}
               </div>
 
             </div>
@@ -574,8 +490,16 @@ function renderBanks(transactions) {
           </div>
 
 
-          <div class="item-amount">
-            ${formatMoney(amount)}
+          <div>
+
+            <div class="item-amount">
+              ${formatRupees(item.amount)}
+            </div>
+
+            <div class="item-date">
+              ${formatTransactionDate(item.date)}
+            </div>
+
           </div>
 
         </div>
@@ -588,10 +512,339 @@ function renderBanks(transactions) {
 
 
 // ==========================================
-// ICONS
+// AMANAT
 // ==========================================
 
-function getTypeIcon(type) {
+function renderAmanat(transactions) {
+
+  const container =
+    document.getElementById(
+      "amanatList"
+    );
+
+
+  if (!container) return;
+
+
+  const amanat =
+    transactions.filter(
+      item =>
+        item.type === "amanat"
+    );
+
+
+  if (!amanat.length) {
+
+    renderEmptyState(
+      container,
+      "👤",
+      "No Amanat",
+      "Add people's money from the Add button."
+    );
+
+    return;
+
+  }
+
+
+  const people = {};
+
+
+  amanat.forEach(item => {
+
+    const name =
+      item.name || "Unknown";
+
+
+    if (!people[name]) {
+
+      people[name] = {
+
+        balance: 0,
+
+        transactions: []
+
+      };
+
+    }
+
+
+    people[name].balance +=
+      Number(item.amount) || 0;
+
+
+    people[name].transactions.push(
+      item
+    );
+
+  });
+
+
+  container.innerHTML =
+    Object.entries(people)
+      .sort(
+        (a, b) =>
+          b[1].balance -
+          a[1].balance
+      )
+      .slice(0, 8)
+      .map(([name, person]) => {
+
+        return `
+
+          <div
+            class="person-item"
+            onclick="showPersonHistory('${escapeForAttribute(name)}')"
+            style="cursor:pointer"
+          >
+
+            <div class="item-left">
+
+              <div class="item-icon">
+                👤
+              </div>
+
+              <div>
+
+                <div class="item-title">
+                  ${safeHTML(name)}
+                </div>
+
+                <div class="item-subtitle">
+                  Tap to view history
+                </div>
+
+              </div>
+
+            </div>
+
+
+            <div>
+
+              <div class="item-amount">
+                ${formatRupees(person.balance)}
+              </div>
+
+              <div class="item-date">
+                Current Balance
+              </div>
+
+            </div>
+
+          </div>
+
+        `;
+
+      }).join("");
+
+}
+
+
+// ==========================================
+// BANKS
+// ==========================================
+
+function renderBanks(transactions) {
+
+  const container =
+    document.getElementById(
+      "bankList"
+    );
+
+
+  if (!container) return;
+
+
+  const banks =
+    transactions.filter(
+      item =>
+        item.type === "bank"
+    );
+
+
+  if (!banks.length) {
+
+    renderEmptyState(
+      container,
+      "🏦",
+      "No Bank Accounts",
+      "Add your bank balance from the Add button."
+    );
+
+    return;
+
+  }
+
+
+  const accounts = {};
+
+
+  banks.forEach(item => {
+
+    const name =
+      item.name || "Bank";
+
+
+    if (!accounts[name]) {
+
+      accounts[name] = 0;
+
+    }
+
+
+    accounts[name] +=
+      Number(item.amount) || 0;
+
+  });
+
+
+  container.innerHTML =
+    Object.entries(accounts)
+      .map(([name, amount]) => {
+
+        return `
+
+          <div class="bank-item">
+
+            <div class="item-left">
+
+              <div class="item-icon">
+                🏦
+              </div>
+
+              <div>
+
+                <div class="item-title">
+                  ${safeHTML(name)}
+                </div>
+
+                <div class="item-subtitle">
+                  Current Balance
+                </div>
+
+              </div>
+
+            </div>
+
+
+            <div class="item-amount">
+              ${formatRupees(amount)}
+            </div>
+
+          </div>
+
+        `;
+
+      }).join("");
+
+}
+
+
+// ==========================================
+// PERSON HISTORY
+// ==========================================
+
+function showPersonHistory(name) {
+
+  const transactions =
+    getTransactions()
+      .filter(
+        item =>
+          item.type === "amanat" &&
+          item.name === name
+      )
+      .sort(
+        (a, b) =>
+          new Date(b.date) -
+          new Date(a.date)
+      );
+
+
+  if (!transactions.length) {
+
+    showToast(
+      "No history found.",
+      "error"
+    );
+
+    return;
+
+  }
+
+
+  let balance = 0;
+
+
+  transactions.forEach(item => {
+
+    balance +=
+      Number(item.amount) || 0;
+
+  });
+
+
+  let message =
+    `👤 ${name}\n\n`;
+
+
+  message +=
+    `Current Balance: ${formatRupees(balance)}\n\n`;
+
+
+  message +=
+    "Transaction History:\n";
+
+
+  transactions.forEach(item => {
+
+    message +=
+      `\n${formatTransactionDate(item.date)}`;
+
+
+    message +=
+      ` — ${formatRupees(item.amount)}`;
+
+
+    if (item.note) {
+
+      message +=
+        ` (${item.note})`;
+
+    }
+
+  });
+
+
+  alert(message);
+
+}
+
+
+// ==========================================
+// HELPERS
+// ==========================================
+
+function getTypeColor(type) {
+
+  const colors = {
+
+    amanat: "#f59e0b",
+
+    bank: "#3b82f6",
+
+    cash: "#22c55e",
+
+    credit: "#ef4444"
+
+  };
+
+
+  return colors[type] || "#d4af37";
+
+}
+
+
+function getTransactionIcon(type) {
 
   const icons = {
 
@@ -605,18 +858,15 @@ function getTypeIcon(type) {
 
   };
 
+
   return icons[type] || "💰";
 
 }
 
 
-// ==========================================
-// TYPE NAME
-// ==========================================
+function getTransactionLabel(type) {
 
-function getTypeName(type) {
-
-  const names = {
+  const labels = {
 
     amanat: "Amanat",
 
@@ -628,45 +878,49 @@ function getTypeName(type) {
 
   };
 
-  return names[type] || "Transaction";
+
+  return labels[type] || "Transaction";
 
 }
 
 
-// ==========================================
-// DATE
-// ==========================================
-
-function formatDate(date) {
+function formatTransactionDate(date) {
 
   if (!date) return "";
 
-  const d = new Date(date);
+
+  const d =
+    new Date(date);
+
 
   if (Number.isNaN(d.getTime())) {
+
     return date;
+
   }
 
-  return d.toLocaleDateString("en-PK", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric"
-  });
+
+  return d.toLocaleDateString(
+    "en-PK",
+    {
+      day: "2-digit",
+      month: "short",
+      year: "numeric"
+    }
+  );
 
 }
 
 
-// ==========================================
-// SECURITY
-// ==========================================
-
-function escapeHTML(value) {
+function escapeForAttribute(value) {
 
   return String(value)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
+    .replaceAll("\\", "\\\\")
+    .replaceAll("'", "\\'");
 
 }
+
+
+// ==========================================
+// DONE
+// ==========================================
