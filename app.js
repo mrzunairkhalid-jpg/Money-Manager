@@ -17,6 +17,7 @@ function initializeApp() {
   loadDashboard();
   setupButtons();
   setupTransactionForm();
+  setupPersonModal();
 }
 
 
@@ -684,7 +685,6 @@ function renderAmanat(transactions) {
           Math.abs(b[1].balance) -
           Math.abs(a[1].balance)
       )
-      .slice(0, 10)
       .map(([name, person]) => {
 
         const balance =
@@ -724,7 +724,7 @@ function renderAmanat(transactions) {
                 </div>
 
                 <div class="item-subtitle">
-                  Tap to view history
+                  Current Balance
                 </div>
 
               </div>
@@ -861,83 +861,94 @@ function renderBanks(transactions) {
 
 function showPersonHistory(name) {
 
-  const transactions =
-    getTransactions()
-      .filter(
-        item =>
-          item.type === "amanat" &&
-          item.name === name
-      )
-      .sort(
-        (a, b) =>
-          new Date(b.date) -
-          new Date(a.date)
-      );
+  const modal = document.getElementById("personModal");
+  if (!modal) return;
 
+  const transactions = getTransactions()
+    .filter(item => item.type === "amanat" && item.name === name)
+    .sort((a, b) => new Date(b.createdAt || b.date) - new Date(a.createdAt || a.date));
 
+  const balance = transactions.reduce(
+    (total, item) => total + (Number(item.amount) || 0),
+    0
+  );
+
+  document.getElementById("personModalName").textContent = name;
+  updateAmount("personModalBalance", balance);
+
+  const list = document.getElementById("personHistoryList");
   if (!transactions.length) {
+    renderEmptyState(list, "📋", "No Transactions", "Add or minus money for this person.");
+  } else {
+    list.innerHTML = transactions.map(item => {
+      const amount = Number(item.amount) || 0;
+      const positive = amount >= 0;
+      return `
+        <div class="transaction-item person-history-item" style="border-left:3px solid ${positive ? '#22c55e' : '#ef4444'}">
+          <div class="item-left">
+            <div class="item-icon" style="background:${positive ? '#22c55e20' : '#ef444420'}">${positive ? '➕' : '➖'}</div>
+            <div>
+              <div class="item-title">${positive ? 'Added / Received' : 'Minus / Returned'}</div>
+              <div class="item-subtitle">${formatTransactionDate(item.date)}${item.note ? ' • ' + safeHTML(item.note) : ''}</div>
+            </div>
+          </div>
+          <div class="item-amount" style="color:${positive ? '#22c55e' : '#ef4444'}">
+            ${positive ? '+' : '−'} ${formatMoney(amount)}
+          </div>
+        </div>`;
+    }).join("");
+  }
 
-    showToast(
-      "No history found.",
-      "error"
-    );
+  modal.dataset.personName = name;
+  modal.classList.add("show");
+}
 
+function closePersonHistory() {
+  const modal = document.getElementById("personModal");
+  if (modal) modal.classList.remove("show");
+}
+
+function addPersonTransaction(operation) {
+  const modal = document.getElementById("personModal");
+  const name = modal?.dataset.personName;
+  if (!name) return;
+
+  const raw = prompt(operation === "add" ? `Add money for ${name}:` : `Minus money for ${name}:`);
+  if (raw === null) return;
+  const amount = Number(raw);
+  if (!Number.isFinite(amount) || amount <= 0) {
+    showToast("Please enter a valid amount.", "error");
     return;
   }
 
-
-  let balance = 0;
-
-
-  transactions.forEach(item => {
-
-    balance +=
-      Number(item.amount) || 0;
-
+  saveTransaction({
+    id: Date.now(),
+    type: "amanat",
+    name,
+    amount: operation === "add" ? amount : -amount,
+    operation,
+    date: new Date().toISOString().slice(0, 10),
+    note: "",
+    createdAt: new Date().toISOString()
   });
 
+  loadDashboard();
+  showPersonHistory(name);
+  showToast("Transaction saved successfully.");
+}
 
-  let message =
-    `👤 ${name}\n\n`;
+function setupPersonModal() {
+  const close = document.getElementById("closePersonModalBtn");
+  const modal = document.getElementById("personModal");
+  const add = document.getElementById("personAddBtn");
+  const minus = document.getElementById("personMinusBtn");
 
-
-  message +=
-    `Current Balance: ${formatRupees(balance)}\n\n`;
-
-
-  message +=
-    "Transaction History:\n";
-
-
-  transactions.forEach(item => {
-
-    const amount =
-      Number(item.amount) || 0;
-
-    const sign =
-      amount >= 0 ? "+" : "−";
-
-
-    message +=
-      `\n${formatTransactionDate(item.date)}`;
-
-
-    message +=
-      ` — ${sign} ${formatMoney(amount)}`;
-
-
-    if (item.note) {
-
-      message +=
-        ` (${item.note})`;
-
-    }
-
+  close?.addEventListener("click", closePersonHistory);
+  modal?.addEventListener("click", event => {
+    if (event.target === modal) closePersonHistory();
   });
-
-
-  alert(message);
-
+  add?.addEventListener("click", () => addPersonTransaction("add"));
+  minus?.addEventListener("click", () => addPersonTransaction("minus"));
 }
 
 

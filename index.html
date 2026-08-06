@@ -327,6 +327,33 @@
 
   </div>
 
+  <!-- Person Details Modal -->
+  <div class="modal-overlay" id="personModal">
+    <div class="modal person-modal">
+      <div class="modal-header">
+        <div>
+          <p class="small-title">AMANAT</p>
+          <h2 id="personModalName">Person</h2>
+        </div>
+        <button class="close-button" id="closePersonModalBtn">✕</button>
+      </div>
+
+      <div class="person-balance-card">
+        <span>Current Balance</span>
+        <strong id="personModalBalance">Rs. 0</strong>
+      </div>
+
+      <div class="person-action-grid">
+        <button class="person-action add" id="personAddBtn">➕ Add Money</button>
+        <button class="person-action minus" id="personMinusBtn">➖ Minus Money</button>
+      </div>
+
+      <div class="person-history-section">
+        <div class="section-heading"><h3>Transaction History</h3></div>
+        <div id="personHistoryList" class="transactions-list"></div>
+      </div>
+    </div>
+  </div>
 
   <!-- JavaScript -->
   <script src="storage.js"></script>

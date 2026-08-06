@@ -574,3 +574,20 @@ button {
     font-size: 13px;
   }
 }
+
+
+/* Person details */
+.person-modal { max-height: 90vh; overflow-y: auto; }
+.person-balance-card {
+  background: linear-gradient(135deg, rgba(212,175,55,.14), rgba(255,255,255,.04));
+  border: 1px solid rgba(212,175,55,.25);
+  border-radius: 16px; padding: 18px; margin-bottom: 16px;
+}
+.person-balance-card span { display:block; color:var(--muted); font-size:13px; margin-bottom:6px; }
+.person-balance-card strong { color:var(--gold-light); font-size:28px; }
+.person-action-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:20px; }
+.person-action { border:0; border-radius:12px; padding:13px 10px; font-weight:700; cursor:pointer; color:#fff; }
+.person-action.add { background:#166534; }
+.person-action.minus { background:#991b1b; }
+.person-history-section h3 { color:#fff; }
+.person-history-item { margin-bottom:8px; }
